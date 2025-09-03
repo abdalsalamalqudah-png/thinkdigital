@@ -63,9 +63,8 @@ auth.post('/login',
       const jwtSecret = c.env.JWT_SECRET || 'eduplatform-secret-key-2024';
       const token = await AuthUtils.generateToken(user, jwtSecret);
 
-      // Create session in KV
-      const sessionManager = new SessionManager(c.env.CACHE);
-      const sessionId = await sessionManager.createSession(user.id, {
+      // Create session token
+      const sessionId = SessionManager.createSessionToken(user.id, {
         email: user.email,
         role: user.role
       });

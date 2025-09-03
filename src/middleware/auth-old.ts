@@ -15,7 +15,7 @@ export const authenticate = async (c: Context<Env>, next: Next) => {
     }
 
     // Get JWT secret from environment
-    const jwtSecret = c.env.JWT_SECRET || 'think-digital-secret-key-2025';
+    const jwtSecret = c.env.JWT_SECRET || 'eduplatform-secret-key-2024';
     
     // Verify token
     const payload = await AuthUtils.verifyToken(token, jwtSecret);
@@ -60,7 +60,7 @@ export const optionalAuth = async (c: Context<Env>, next: Next) => {
     const token = AuthUtils.extractBearerToken(authHeader);
 
     if (token) {
-      const jwtSecret = c.env.JWT_SECRET || 'think-digital-secret-key-2025';
+      const jwtSecret = c.env.JWT_SECRET || 'eduplatform-secret-key-2024';
       const payload = await AuthUtils.verifyToken(token, jwtSecret);
 
       const user = await c.env.DB.prepare(
@@ -80,37 +80,24 @@ export const optionalAuth = async (c: Context<Env>, next: Next) => {
   await next();
 };
 
-// Simple rate limiting without KV (using in-memory Map for now)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
+// Rate limiting middleware using KV
 export const rateLimit = (requests: number = 100, windowMinutes: number = 15) => {
   return async (c: Context<Env>, next: Next) => {
-    // Skip rate limiting if CACHE not available
-    if (!c.env.CACHE) {
-      await next();
-      return;
-    }
-
     const ip = c.req.header('CF-Connecting-IP') || 'unknown';
     const key = `rate-limit:${ip}`;
     
-    try {
-      const current = await c.env.CACHE.get(key);
-      const count = current ? parseInt(current) : 0;
+    const current = await c.env.CACHE.get(key);
+    const count = current ? parseInt(current) : 0;
 
-      if (count >= requests) {
-        return c.json({ error: 'Too many requests' }, 429);
-      }
-
-      await c.env.CACHE.put(
-        key,
-        String(count + 1),
-        { expirationTtl: windowMinutes * 60 }
-      );
-    } catch (error) {
-      // If KV fails, continue without rate limiting
-      console.warn('Rate limiting skipped - KV not available');
+    if (count >= requests) {
+      return c.json({ error: 'Too many requests' }, 429);
     }
+
+    await c.env.CACHE.put(
+      key,
+      String(count + 1),
+      { expirationTtl: windowMinutes * 60 }
+    );
 
     await next();
   };
@@ -118,7 +105,7 @@ export const rateLimit = (requests: number = 100, windowMinutes: number = 15) =>
 
 // CORS middleware configuration
 export const corsConfig = {
-  origin: ['http://localhost:3000', 'https://think-digital.pages.dev', 'https://*.think-digital.pages.dev'],
+  origin: ['http://localhost:3000', 'https://eduplatform.pages.dev'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   exposeHeaders: ['Content-Length', 'X-Request-Id'],
