@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { serveStatic } from 'hono/cloudflare-workers';
 
 type Bindings = {
   DB: D1Database;
@@ -9,6 +10,11 @@ const app = new Hono<{ Bindings: Bindings }>();
 
 // Enable CORS
 app.use('*', cors());
+
+// Serve static files from public directory
+app.use('/student-dashboard.html', serveStatic({ root: './public' }));
+app.use('/instructor-dashboard.html', serveStatic({ root: './public' }));
+app.use('/admin-dashboard.html', serveStatic({ root: './public' }));
 
 // Main landing page
 app.get('/', (c) => {

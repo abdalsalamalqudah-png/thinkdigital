@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الطالب - Think Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold">
+                    <i class="fas fa-graduation-cap ml-2"></i>
+                    Think Digital - لوحة الطالب
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="user-name" class="font-medium"></span>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sign-out-alt ml-2"></i>
+                        خروج
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Welcome Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                مرحباً بك، <span id="welcome-name"></span>! 👋
+            </h1>
+            <p class="text-gray-600">استمر في التعلم وطور مهاراتك</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-blue-100">الدورات المسجلة</p>
+                        <p class="text-3xl font-bold">5</p>
+                    </div>
+                    <i class="fas fa-book-open text-4xl opacity-30"></i>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-green-100">الدورات المكتملة</p>
+                        <p class="text-3xl font-bold">2</p>
+                    </div>
+                    <i class="fas fa-check-circle text-4xl opacity-30"></i>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-purple-100">الشهادات</p>
+                        <p class="text-3xl font-bold">2</p>
+                    </div>
+                    <i class="fas fa-certificate text-4xl opacity-30"></i>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-orange-100">معدل التقدم</p>
+                        <p class="text-3xl font-bold">68%</p>
+                    </div>
+                    <i class="fas fa-chart-line text-4xl opacity-30"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Courses -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-play-circle text-purple-600 ml-2"></i>
+                الدورات الحالية
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Course Card 1 -->
+                <div class="border rounded-lg p-4 hover:shadow-lg transition">
+                    <div class="flex gap-4">
+                        <img src="https://via.placeholder.com/100x100/6366f1/ffffff?text=JS" class="rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg mb-2">تطوير الويب بـ JavaScript</h3>
+                            <p class="text-gray-600 text-sm mb-3">تعلم البرمجة من الصفر</p>
+                            <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">التقدم: 75%</span>
+                                <button class="text-blue-600 hover:text-blue-800 font-medium">
+                                    <i class="fas fa-play ml-1"></i>
+                                    متابعة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Course Card 2 -->
+                <div class="border rounded-lg p-4 hover:shadow-lg transition">
+                    <div class="flex gap-4">
+                        <img src="https://via.placeholder.com/100x100/10b981/ffffff?text=UI" class="rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg mb-2">تصميم واجهات المستخدم</h3>
+                            <p class="text-gray-600 text-sm mb-3">أساسيات UI/UX</p>
+                            <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                <div class="bg-gradient-to-r from-green-500 to-teal-500 h-3 rounded-full" style="width: 45%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">التقدم: 45%</span>
+                                <button class="text-blue-600 hover:text-blue-800 font-medium">
+                                    <i class="fas fa-play ml-1"></i>
+                                    متابعة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Progress Chart -->
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-line text-blue-600 ml-2"></i>
+                    التقدم الأسبوعي
+                </h2>
+                <canvas id="progressChart"></canvas>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-tasks text-green-600 ml-2"></i>
+                    المهام القادمة
+                </h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                        <div>
+                            <p class="font-semibold">واجب JavaScript</p>
+                            <p class="text-sm text-gray-600">الموعد: بعد 3 أيام</p>
+                        </div>
+                        <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm">قريب</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div>
+                            <p class="font-semibold">اختبار UI Design</p>
+                            <p class="text-sm text-gray-600">الموعد: بعد أسبوع</p>
+                        </div>
+                        <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">اختبار</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div>
+                            <p class="font-semibold">مشروع نهائي</p>
+                            <p class="text-sm text-gray-600">الموعد: بعد أسبوعين</p>
+                        </div>
+                        <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">مشروع</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommended Courses -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-star text-yellow-500 ml-2"></i>
+                دورات موصى بها لك
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
+                    <img src="https://via.placeholder.com/300x150/8b5cf6/ffffff?text=Python" class="w-full">
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">برمجة Python المتقدمة</h3>
+                        <p class="text-gray-600 text-sm mb-3">تعلم البرمجة المتقدمة وعلوم البيانات</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-purple-600 font-bold">$49.99</span>
+                            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                                تسجيل
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
+                    <img src="https://via.placeholder.com/300x150/3b82f6/ffffff?text=React" class="w-full">
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">React.js للمبتدئين</h3>
+                        <p class="text-gray-600 text-sm mb-3">بناء تطبيقات ويب تفاعلية</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-purple-600 font-bold">$39.99</span>
+                            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                                تسجيل
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
+                    <img src="https://via.placeholder.com/300x150/f59e0b/ffffff?text=AI" class="w-full">
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">مقدمة في الذكاء الاصطناعي</h3>
+                        <p class="text-gray-600 text-sm mb-3">أساسيات AI و Machine Learning</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-purple-600 font-bold">$59.99</span>
+                            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                                تسجيل
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.email || user.role !== 'student') {
+            window.location.href = '/';
+        }
+        
+        // Display user info
+        document.getElementById('user-name').textContent = user.email;
+        document.getElementById('welcome-name').textContent = user.name || 'الطالب';
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+        
+        // Progress Chart
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+                datasets: [{
+                    label: 'ساعات الدراسة',
+                    data: [2, 3, 1, 4, 3, 5, 2],
+                    borderColor: 'rgb(147, 51, 234)',
+                    backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'الساعات'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
