@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { getStudentDashboard, getInstructorDashboard, getAdminDashboard } from './dashboards';
+import { getHomePage } from './pages/home';
+import { getCoursesPage } from './pages/courses';
+import { getCourseDetailPage } from './pages/course-detail';
 
 type Bindings = {
   DB: D1Database;
@@ -11,8 +14,23 @@ const app = new Hono<{ Bindings: Bindings }>();
 // Enable CORS
 app.use('*', cors());
 
-// Main landing page
+// Home page (Udemy-like)
 app.get('/', (c) => {
+  return c.html(getHomePage());
+});
+
+// Courses browsing page
+app.get('/courses', (c) => {
+  return c.html(getCoursesPage());
+});
+
+// Course detail page
+app.get('/course/:id', (c) => {
+  return c.html(getCourseDetailPage());
+});
+
+// Old landing page (backup)
+app.get('/old-home', (c) => {
   return c.html(`
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
