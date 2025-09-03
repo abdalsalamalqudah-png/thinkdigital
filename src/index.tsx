@@ -11,6 +11,7 @@ import courseRoutes from './routes/courses';
 import enrollmentRoutes from './routes/enrollments';
 import paymentRoutes from './routes/payments';
 import forumRoutes from './routes/forums';
+import dashboardRoutes from './routes/dashboard';
 
 type Env = { Bindings: CloudflareBindings };
 
@@ -22,6 +23,7 @@ app.use('/api/*', cors(corsConfig));
 
 // Serve static files
 app.use('/static/*', serveStatic({ root: './public' }));
+app.use('/*', serveStatic({ root: './dist' }));
 
 // Health check
 app.get('/health', (c) => {
@@ -38,6 +40,7 @@ app.route('/api/courses', courseRoutes);
 app.route('/api/enrollments', enrollmentRoutes);
 app.route('/api/payments', paymentRoutes);
 app.route('/api/forums', forumRoutes);
+app.route('/dashboard', dashboardRoutes);
 
 // API Info
 app.get('/api', (c) => {
@@ -87,6 +90,8 @@ app.get('/api', (c) => {
     }
   });
 });
+
+
 
 // Main page
 app.get('/', (c) => {

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - EduPlatform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div x-data="{
+        sidebarOpen: true,
+        activeTab: 'overview',
+        user: null,
+        enrollments: [],
+        stats: {
+            totalCourses: 0,
+            completedCourses: 0,
+            inProgressCourses: 0,
+            totalHours: 0,
+            certificates: 0,
+            averageProgress: 0
+        },
+        loading: true,
+        
+        async init() {
+            this.checkAuth();
+            await this.loadDashboard();
+        },
+        
+        checkAuth() {
+            const token = localStorage.getItem('auth_token');
+            const userData = localStorage.getItem('user_data');
+            if (!token || !userData) {
+                window.location.href = '/';
+                return;
+            }
+            this.user = JSON.parse(userData);
+        },
+        
+        async loadDashboard() {
+            try {
+                const token = localStorage.getItem('auth_token');
+                const response = await fetch('/api/enrollments/my-courses', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.enrollments = data.data;
+                    this.calculateStats();
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        calculateStats() {
+            this.stats.totalCourses = this.enrollments.length;
+            this.stats.completedCourses = this.enrollments.filter(e => e.status === 'completed').length;
+            this.stats.inProgressCourses = this.enrollments.filter(e => e.status === 'active').length;
+            this.stats.totalHours = this.enrollments.reduce((sum, e) => sum + (e.duration_hours || 0), 0);
+            this.stats.certificates = this.enrollments.filter(e => e.certificate_issued).length;
+            
+            const totalProgress = this.enrollments.reduce((sum, e) => sum + e.progress_percentage, 0);
+            this.stats.averageProgress = this.enrollments.length > 0 
+                ? Math.round(totalProgress / this.enrollments.length) 
+                : 0;
+        },
+        
+        logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            window.location.href = '/';
+        }
+    }">
+        <div class="flex h-screen">
+            <!-- Sidebar -->
+            <div :class="sidebarOpen ? 'w-64' : 'w-20'" class="bg-gray-900 text-white transition-all duration-300">
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-8">
+                        <div :class="!sidebarOpen && 'hidden'" class="flex items-center">
+                            <i class="fas fa-graduation-cap text-2xl text-purple-400 mr-2"></i>
+                            <span class="text-xl font-bold">EduPlatform</span>
+                        </div>
+                        <button @click="sidebarOpen = !sidebarOpen" class="text-gray-400 hover:text-white">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                    
+                    <nav class="space-y-2">
+                        <a @click="activeTab = 'overview'" :class="activeTab === 'overview' ? 'bg-purple-600' : 'hover:bg-gray-800'" 
+                           class="flex items-center p-3 rounded-lg cursor-pointer transition">
+                            <i class="fas fa-home w-6"></i>
+                            <span :class="!sidebarOpen && 'hidden'" class="ml-3">Overview</span>
+                        </a>
+                        <a @click="activeTab = 'courses'" :class="activeTab === 'courses' ? 'bg-purple-600' : 'hover:bg-gray-800'" 
+                           class="flex items-center p-3 rounded-lg cursor-pointer transition">
+                            <i class="fas fa-book w-6"></i>
+                            <span :class="!sidebarOpen && 'hidden'" class="ml-3">My Courses</span>
+                        </a>
+                        <a @click="activeTab = 'progress'" :class="activeTab === 'progress' ? 'bg-purple-600' : 'hover:bg-gray-800'" 
+                           class="flex items-center p-3 rounded-lg cursor-pointer transition">
+                            <i class="fas fa-chart-line w-6"></i>
+                            <span :class="!sidebarOpen && 'hidden'" class="ml-3">Progress</span>
+                        </a>
+                        <a @click="activeTab = 'certificates'" :class="activeTab === 'certificates' ? 'bg-purple-600' : 'hover:bg-gray-800'" 
+                           class="flex items-center p-3 rounded-lg cursor-pointer transition">
+                            <i class="fas fa-certificate w-6"></i>
+                            <span :class="!sidebarOpen && 'hidden'" class="ml-3">Certificates</span>
+                        </a>
+                        <a @click="activeTab = 'calendar'" :class="activeTab === 'calendar' ? 'bg-purple-600' : 'hover:bg-gray-800'" 
+                           class="flex items-center p-3 rounded-lg cursor-pointer transition">
+                            <i class="fas fa-calendar w-6"></i>
+                            <span :class="!sidebarOpen && 'hidden'" class="ml-3">Schedule</span>
+                        </a>
+                        <a @click="activeTab = 'settings'" :class="activeTab === 'settings' ? 'bg-purple-600' : 'hover:bg-gray-800'" 
+                           class="flex items-center p-3 rounded-lg cursor-pointer transition">
+                            <i class="fas fa-cog w-6"></i>
+                            <span :class="!sidebarOpen && 'hidden'" class="ml-3">Settings</span>
+                        </a>
+                    </nav>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="absolute bottom-0 w-full p-4 border-t border-gray-800">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div :class="!sidebarOpen && 'hidden'" class="ml-3 flex-1">
+                            <div class="text-sm font-medium" x-text="user?.full_name || 'Student'"></div>
+                            <div class="text-xs text-gray-400" x-text="user?.email || ''"></div>
+                        </div>
+                        <button @click="logout" :class="!sidebarOpen && 'hidden'" class="text-gray-400 hover:text-red-400">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Header -->
+                <header class="bg-white shadow-sm border-b">
+                    <div class="px-6 py-4 flex justify-between items-center">
+                        <h1 class="text-2xl font-semibold text-gray-800" x-text="
+                            activeTab === 'overview' ? 'Dashboard Overview' :
+                            activeTab === 'courses' ? 'My Courses' :
+                            activeTab === 'progress' ? 'Learning Progress' :
+                            activeTab === 'certificates' ? 'My Certificates' :
+                            activeTab === 'calendar' ? 'Learning Schedule' :
+                            activeTab === 'settings' ? 'Account Settings' : 'Dashboard'
+                        "></h1>
+                        
+                        <div class="flex items-center space-x-4">
+                            <button class="relative">
+                                <i class="fas fa-bell text-gray-600 text-xl"></i>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                            </button>
+                            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                                <i class="fas fa-plus mr-2"></i>Browse Courses
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Loading State -->
+                <div x-show="loading" class="flex items-center justify-center h-64">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-600"></i>
+                </div>
+
+                <!-- Overview Tab -->
+                <div x-show="!loading && activeTab === 'overview'" class="p-6">
+                    <!-- Welcome Message -->
+                    <div class="gradient-bg rounded-xl p-6 mb-6 text-white">
+                        <h2 class="text-2xl font-bold mb-2">Welcome back, <span x-text="user?.full_name || 'Student'"></span>! 👋</h2>
+                        <p class="opacity-90">You have <span x-text="stats.inProgressCourses"></span> courses in progress. Keep up the great work!</p>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <i class="fas fa-book-open text-3xl text-purple-600"></i>
+                                <span class="text-2xl font-bold text-gray-800" x-text="stats.totalCourses"></span>
+                            </div>
+                            <p class="text-gray-600">Total Courses</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <i class="fas fa-check-circle text-3xl text-green-600"></i>
+                                <span class="text-2xl font-bold text-gray-800" x-text="stats.completedCourses"></span>
+                            </div>
+                            <p class="text-gray-600">Completed</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <i class="fas fa-clock text-3xl text-blue-600"></i>
+                                <span class="text-2xl font-bold text-gray-800" x-text="stats.totalHours"></span>
+                            </div>
+                            <p class="text-gray-600">Learning Hours</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <i class="fas fa-award text-3xl text-yellow-500"></i>
+                                <span class="text-2xl font-bold text-gray-800" x-text="stats.certificates"></span>
+                            </div>
+                            <p class="text-gray-600">Certificates</p>
+                        </div>
+                    </div>
+
+                    <!-- Progress Chart -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                            <h3 class="text-lg font-semibold mb-4">Overall Progress</h3>
+                            <div class="flex items-center justify-center">
+                                <div class="relative">
+                                    <svg class="w-48 h-48">
+                                        <circle cx="96" cy="96" r="88" stroke="#E5E7EB" stroke-width="12" fill="none"></circle>
+                                        <circle cx="96" cy="96" r="88" stroke="#9333EA" stroke-width="12" fill="none"
+                                                class="progress-ring"
+                                                :stroke-dasharray="552"
+                                                :stroke-dashoffset="552 - (552 * stats.averageProgress / 100)"></circle>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <div class="text-4xl font-bold text-gray-800" x-text="stats.averageProgress + '%'"></div>
+                                            <div class="text-gray-600">Complete</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                            <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-video text-purple-600 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium">Watched "Introduction to React"</p>
+                                        <p class="text-xs text-gray-500">2 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-check text-green-600 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium">Completed Quiz in "JavaScript Basics"</p>
+                                        <p class="text-xs text-gray-500">5 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-certificate text-yellow-500 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium">Earned certificate for "Web Design"</p>
+                                        <p class="text-xs text-gray-500">Yesterday</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Courses Tab -->
+                <div x-show="!loading && activeTab === 'courses'" class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-for="enrollment in enrollments" :key="enrollment.id">
+                            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                                <div class="h-40 bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                                    <i class="fas fa-play-circle text-white text-4xl opacity-75"></i>
+                                </div>
+                                <div class="p-6">
+                                    <h3 class="font-semibold text-lg mb-2" x-text="enrollment.course_title"></h3>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        Instructor: <span x-text="enrollment.instructor_name"></span>
+                                    </p>
+                                    
+                                    <!-- Progress Bar -->
+                                    <div class="mb-4">
+                                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                            <span>Progress</span>
+                                            <span x-text="enrollment.progress_percentage + '%'"></span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                                                 :style="'width: ' + enrollment.progress_percentage + '%'"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between text-sm text-gray-600 mb-4">
+                                        <span>
+                                            <i class="fas fa-book-open mr-1"></i>
+                                            <span x-text="enrollment.completed_lessons + '/' + enrollment.total_lessons"></span> lessons
+                                        </span>
+                                        <span>
+                                            <i class="fas fa-clock mr-1"></i>
+                                            <span x-text="enrollment.duration_hours + 'h'"></span>
+                                        </span>
+                                    </div>
+                                    
+                                    <button class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+                                        <template x-if="enrollment.progress_percentage === 100">
+                                            <span><i class="fas fa-certificate mr-2"></i>View Certificate</span>
+                                        </template>
+                                        <template x-if="enrollment.progress_percentage < 100">
+                                            <span><i class="fas fa-play mr-2"></i>Continue Learning</span>
+                                        </template>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <div x-show="enrollments.length === 0" class="text-center py-12">
+                        <i class="fas fa-book-open text-6xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No courses yet</h3>
+                        <p class="text-gray-500 mb-4">Start your learning journey today!</p>
+                        <button class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-search mr-2"></i>Browse Courses
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Other tabs content -->
+                <div x-show="!loading && activeTab === 'progress'" class="p-6">
+                    <div class="bg-white rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4">Learning Progress Analytics</h3>
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <div x-show="!loading && activeTab === 'certificates'" class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-for="enrollment in enrollments.filter(e => e.certificate_issued)" :key="enrollment.id">
+                            <div class="bg-white rounded-xl p-6 shadow-sm text-center">
+                                <i class="fas fa-award text-6xl text-yellow-500 mb-4"></i>
+                                <h3 class="font-semibold mb-2" x-text="enrollment.course_title"></h3>
+                                <p class="text-sm text-gray-600 mb-4">Completed on <span x-text="new Date(enrollment.completion_date).toLocaleDateString()"></span></p>
+                                <a :href="'/api/enrollments/certificate/' + enrollment.id" target="_blank" 
+                                   class="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                                    <i class="fas fa-download mr-2"></i>View Certificate
+                                </a>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div x-show="!loading && activeTab === 'calendar'" class="p-6">
+                    <div class="bg-white rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4">Learning Schedule</h3>
+                        <p class="text-gray-600">Your personalized learning calendar will appear here.</p>
+                    </div>
+                </div>
+
+                <div x-show="!loading && activeTab === 'settings'" class="p-6">
+                    <div class="bg-white rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4">Account Settings</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" :value="user?.full_name" class="w-full px-3 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" :value="user?.email" class="w-full px-3 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                                <select class="w-full px-3 py-2 border rounded-lg">
+                                    <option>English</option>
+                                    <option>Arabic</option>
+                                    <option>Spanish</option>
+                                </select>
+                            </div>
+                            <button class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart.js when progress tab is shown
+        document.addEventListener('alpine:initialized', () => {
+            Alpine.effect(() => {
+                const activeTab = Alpine.$data(document.querySelector('[x-data]')).activeTab;
+                if (activeTab === 'progress') {
+                    setTimeout(() => {
+                        const ctx = document.getElementById('progressChart');
+                        if (ctx) {
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                                    datasets: [{
+                                        label: 'Learning Hours',
+                                        data: [2, 3, 1, 4, 2, 5, 3],
+                                        borderColor: 'rgb(147, 51, 234)',
+                                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                                        tension: 0.4
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'top',
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }, 100);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
