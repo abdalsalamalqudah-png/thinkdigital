@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { getStudentDashboard, getInstructorDashboard, getAdminDashboard } from './dashboards';
 
 type Bindings = {
   DB: D1Database;
@@ -420,6 +421,31 @@ app.get('/api/db/test', async (c) => {
       error: error.message
     }, 500);
   }
+});
+
+// Dashboard routes
+app.get('/student-dashboard.html', (c) => {
+  return c.html(getStudentDashboard());
+});
+
+app.get('/student-dashboard', (c) => {
+  return c.html(getStudentDashboard());
+});
+
+app.get('/instructor-dashboard.html', (c) => {
+  return c.html(getInstructorDashboard());
+});
+
+app.get('/instructor-dashboard', (c) => {
+  return c.html(getInstructorDashboard());
+});
+
+app.get('/admin-dashboard.html', (c) => {
+  return c.html(getAdminDashboard());
+});
+
+app.get('/admin-dashboard', (c) => {
+  return c.html(getAdminDashboard());
 });
 
 // 404 Handler
